@@ -1,0 +1,57 @@
+PODS:
+  - audio_session (0.0.1):
+    - Flutter
+  - Flutter (1.0.0)
+  - flutter_sound (8.1.4):
+    - Flutter
+    - mobile-ffmpeg-full (= 4.4.LTS)
+    - tau_core (= 8.1.4)
+  - just_audio (0.0.1):
+    - Flutter
+  - mobile-ffmpeg-full (4.4.LTS)
+  - path_provider (0.0.1):
+    - Flutter
+  - photo_gallery (0.0.1):
+    - Flutter
+  - tau_core (8.1.4)
+
+DEPENDENCIES:
+  - audio_session (from `.symlinks/plugins/audio_session/ios`)
+  - Flutter (from `Flutter`)
+  - flutter_sound (from `.symlinks/plugins/flutter_sound/ios`)
+  - just_audio (from `.symlinks/plugins/just_audio/ios`)
+  - path_provider (from `.symlinks/plugins/path_provider/ios`)
+  - photo_gallery (from `.symlinks/plugins/photo_gallery/ios`)
+
+SPEC REPOS:
+  trunk:
+    - mobile-ffmpeg-full
+    - tau_core
+
+EXTERNAL SOURCES:
+  audio_session:
+    :path: ".symlinks/plugins/audio_session/ios"
+  Flutter:
+    :path: Flutter
+  flutter_sound:
+    :path: ".symlinks/plugins/flutter_sound/ios"
+  just_audio:
+    :path: ".symlinks/plugins/just_audio/ios"
+  path_provider:
+    :path: ".symlinks/plugins/path_provider/ios"
+  photo_gallery:
+    :path: ".symlinks/plugins/photo_gallery/ios"
+
+SPEC CHECKSUMS:
+  audio_session: 4f3e461722055d21515cf3261b64c973c062f345
+  Flutter: 434fef37c0980e73bb6479ef766c45957d4b510c
+  flutter_sound: b7e3e75915112839e8bb926b6bab1d28121ac6d5
+  just_audio: baa7252489dbcf47a4c7cc9ca663e9661c99aafa
+  mobile-ffmpeg-full: f17c82219b4ff9e4018b5e21f88b78c28a3475db
+  path_provider: abfe2b5c733d04e238b0d8691db0cfd63a27a93c
+  photo_gallery: 9f95e57747cd22c10676ece3660d1ffe6c603ee5
+  tau_core: 8e07b9ce46e5e1b1956fb4d5e9ac713206e5c315
+
+PODFILE CHECKSUM: 4e8f8b2be68aeea4c0d5beb6ff1e79fface1d048
+
+COCOAPODS: 1.10.1
