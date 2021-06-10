@@ -1,16 +1,15 @@
-import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:photo_gallery/photo_gallery.dart';
 import 'package:sample_app/src/bloc/player_cubit.dart' as cubit_package;
+import 'package:sample_app/src/service/service_media.dart';
 import 'package:transparent_image/transparent_image.dart';
-import 'package:flutter/services.dart' show rootBundle;
+
+final pageController = PageController(initialPage: 0);
 
 class PlayerPage extends StatelessWidget {
-  const PlayerPage({Key? key}) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -29,9 +28,16 @@ class PlayerPage extends StatelessWidget {
       builder: (context, state) {
         return SafeArea(
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _getGallery(context, state),
-              _getPlayer(context),
+              Expanded(
+                flex: 7,
+                child: _getGallery(context, state),
+              ),
+              Expanded(
+                flex: 3,
+                child: _getPlayer(context),
+              ),
             ],
           ),
         );
@@ -64,9 +70,9 @@ class PlayerPage extends StatelessWidget {
     }
 
     return Container(
-      child: CarouselSlider(
-        items: images,
-        options: CarouselOptions(height: 400.0),
+      child: PageView(
+        controller: pageController,
+        children: images,
       ),
     );
   }
@@ -113,88 +119,111 @@ class ControlButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
+    return Column(
       children: [
-        IconButton(
-          icon: Icon(Icons.volume_up),
-          onPressed: () {
-            _showSliderDialog(
-              context: context,
-              title: "Adjust volume",
-              divisions: 10,
-              min: 0.0,
-              max: 1.0,
-              stream: player.volumeStream,
-              onChanged: player.setVolume,
-            );
-          },
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              icon: Icon(Icons.volume_up),
+              onPressed: () {
+                _showSliderDialog(
+                  context: context,
+                  title: "Adjust volume",
+                  divisions: 10,
+                  min: 0.0,
+                  max: 1.0,
+                  stream: player.volumeStream,
+                  onChanged: player.setVolume,
+                );
+              },
+            ),
+            StreamBuilder<SequenceState?>(
+              stream: player.sequenceStateStream,
+              builder: (context, snapshot) => IconButton(
+                icon: Icon(Icons.skip_previous),
+                onPressed: player.hasPrevious ? player.seekToPrevious : null,
+              ),
+            ),
+            StreamBuilder<PlayerState>(
+              stream: player.playerStateStream,
+              builder: (context, snapshot) {
+                final playerState = snapshot.data;
+                final processingState = playerState?.processingState;
+                final playing = playerState?.playing;
+                if (processingState == ProcessingState.loading || processingState == ProcessingState.buffering) {
+                  return Container(
+                    margin: EdgeInsets.all(8.0),
+                    width: 64.0,
+                    height: 64.0,
+                    child: CircularProgressIndicator(),
+                  );
+                } else if (playing != true) {
+                  return IconButton(
+                    icon: Icon(Icons.play_arrow),
+                    iconSize: 64.0,
+                    onPressed: player.play,
+                  );
+                } else if (processingState != ProcessingState.completed) {
+                  return IconButton(
+                    icon: Icon(Icons.pause),
+                    iconSize: 64.0,
+                    onPressed: player.pause,
+                  );
+                } else {
+                  return IconButton(
+                    icon: Icon(Icons.replay),
+                    iconSize: 64.0,
+                    onPressed: () => player.seek(Duration.zero, index: player.effectiveIndices!.first),
+                  );
+                }
+              },
+            ),
+            StreamBuilder<SequenceState?>(
+              stream: player.sequenceStateStream,
+              builder: (context, snapshot) => IconButton(
+                icon: Icon(Icons.skip_next),
+                onPressed: player.hasNext ? player.seekToNext : null,
+              ),
+            ),
+            StreamBuilder<double>(
+              stream: player.speedStream,
+              builder: (context, snapshot) => IconButton(
+                icon: Text("${snapshot.data?.toStringAsFixed(1)}x", style: TextStyle(fontWeight: FontWeight.bold)),
+                onPressed: () {
+                  _showSliderDialog(
+                    context: context,
+                    title: "Adjust speed",
+                    divisions: 10,
+                    min: 0.5,
+                    max: 1.5,
+                    stream: player.speedStream,
+                    onChanged: player.setSpeed,
+                  );
+                },
+              ),
+            ),
+          ],
         ),
-        StreamBuilder<SequenceState?>(
-          stream: player.sequenceStateStream,
-          builder: (context, snapshot) => IconButton(
-            icon: Icon(Icons.skip_previous),
-            onPressed: player.hasPrevious ? player.seekToPrevious : null,
-          ),
-        ),
-        StreamBuilder<PlayerState>(
-          stream: player.playerStateStream,
-          builder: (context, snapshot) {
-            final playerState = snapshot.data;
-            final processingState = playerState?.processingState;
-            final playing = playerState?.playing;
-            if (processingState == ProcessingState.loading || processingState == ProcessingState.buffering) {
-              return Container(
-                margin: EdgeInsets.all(8.0),
-                width: 64.0,
-                height: 64.0,
-                child: CircularProgressIndicator(),
-              );
-            } else if (playing != true) {
-              return IconButton(
-                icon: Icon(Icons.play_arrow),
-                iconSize: 64.0,
-                onPressed: player.play,
-              );
-            } else if (processingState != ProcessingState.completed) {
-              return IconButton(
-                icon: Icon(Icons.pause),
-                iconSize: 64.0,
-                onPressed: player.pause,
-              );
-            } else {
-              return IconButton(
-                icon: Icon(Icons.replay),
-                iconSize: 64.0,
-                onPressed: () => player.seek(Duration.zero, index: player.effectiveIndices!.first),
-              );
-            }
-          },
-        ),
-        StreamBuilder<SequenceState?>(
-          stream: player.sequenceStateStream,
-          builder: (context, snapshot) => IconButton(
-            icon: Icon(Icons.skip_next),
-            onPressed: player.hasNext ? player.seekToNext : null,
-          ),
-        ),
-        StreamBuilder<double>(
-          stream: player.speedStream,
-          builder: (context, snapshot) => IconButton(
-            icon: Text("${snapshot.data?.toStringAsFixed(1)}x", style: TextStyle(fontWeight: FontWeight.bold)),
-            onPressed: () {
-              _showSliderDialog(
-                context: context,
-                title: "Adjust speed",
-                divisions: 10,
-                min: 0.5,
-                max: 1.5,
-                stream: player.speedStream,
-                onChanged: player.setSpeed,
-              );
-            },
-          ),
-        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            StreamBuilder<Duration>(
+              stream: player.positionStream,
+              builder: (context, snapshot) {
+                final duration = snapshot.data;
+                final durationInt = duration == null ? 0 : duration.inSeconds;
+                var mediaService = MediaService();
+                var timeData = mediaService.timeData;
+                var page = timeData[durationInt];
+                if (page != null && page != 0) {
+                  pageController.jumpToPage(page);
+                }
+                return Text(durationInt.toString());
+              },
+            ),
+          ],
+        )
       ],
     );
   }
